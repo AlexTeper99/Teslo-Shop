@@ -11,7 +11,7 @@ const SummaryPage = () => {
     <ShopLayout title='Resumen de orden' pageDescription={'Resumen de la orden'}>
         <Typography variant='h1' component='h1'>Resumen de la orden</Typography>
 
-        <Grid container>
+        <Grid container spacing={3}>
             <Grid item xs={ 12 } sm={ 7 }>
                 <CartList />
             </Grid>
