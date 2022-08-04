@@ -26,6 +26,7 @@ export const AuthProvider:FC = ({ children }) => {
         checkToken();
     }, [])
 
+    //llamo a check token cada vez que se actualiza el auth provider, es decir cada vez que recargue el navegador web
     const checkToken = async() => {
 
         try {
