@@ -1,7 +1,7 @@
 import { Box, Button, Chip, Grid, Typography } from '@mui/material';
 import { ShopLayout } from '../../components/layouts';
 import { ProductSlideshow, SizeSelector } from '../../components/products';
-import { initialData } from '../../database/products';
+import { initialData } from '../../database/seed-data';
 import { ItemCounter } from '../../components/ui/ItemCounter';
 import { useRouter } from 'next/router';
 import { useProducts } from '../../hooks';
