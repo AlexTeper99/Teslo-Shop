@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { Box, Button, FormControl, Grid, InputLabel, MenuItem, Select, TextField, Typography } from "@mui/material";
 import Cookies from 'js-cookie';
@@ -38,6 +38,11 @@ const getAddressFromCookies = ():FormData => {
 
 const AddressPage = () => {
 
+    const [hidrated, setHidrated] = useState(false);
+    useEffect(() => {
+        setHidrated(true);
+    },[])
+
     const router = useRouter();
     const { updateAddress} = useContext( CartContext );
 
@@ -51,7 +56,9 @@ const AddressPage = () => {
     }
 
   return (
-    <ShopLayout title="Dirección" pageDescription="Confirmar dirección del destino">
+
+        hidrated && (
+        <ShopLayout title="Dirección" pageDescription="Confirmar dirección del destino">
         <form onSubmit={ handleSubmit( onSubmitAddress ) }>
 
     
@@ -134,9 +141,9 @@ const AddressPage = () => {
                     <FormControl fullWidth>
                         <TextField
                             select
+                            required
                             variant="filled"
-                            label="País"
-                            defaultValue={ Cookies.get('country') || countries[0].code }
+                            defaultValue={ Cookies.get('country') ?? " " }
                             { ...register('country', {
                                 required: 'Este campo es requerido'
                             })}
@@ -178,7 +185,8 @@ const AddressPage = () => {
 
         </form>
     </ShopLayout>
-  )
+                    )
+    )
 }
 
 

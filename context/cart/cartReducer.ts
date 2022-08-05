@@ -63,6 +63,11 @@ export const cartReducer = ( state: CartState, action: CartActionType ): CartSta
 
 
       case '[Cart] - Update Address':
+         return {
+            ...state,
+            shippingAddress: action.payload
+         }
+
       case '[Cart] - LoadAddress from Cookies':
          return {
             ...state,
