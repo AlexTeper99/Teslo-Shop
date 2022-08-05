@@ -5,6 +5,7 @@ import axios from 'axios';
 
 import { tesloApi } from '../../api';
 import { IUser } from '../../interfaces';
+import router from 'next/router';
 
 export interface AuthState {
     isLoggedIn: boolean;
@@ -28,6 +29,10 @@ export const AuthProvider:FC = ({ children }) => {
 
     //llamo a check token cada vez que se actualiza el auth provider, es decir cada vez que recargue el navegador web
     const checkToken = async() => {
+
+        if(!Cookies.get('token')){
+            return;
+        }
 
         try {
             const { data } = await tesloApi.get('/user/validate-token');
@@ -81,6 +86,13 @@ export const AuthProvider:FC = ({ children }) => {
         }
     }
 
+    const logout = () => {
+        Cookies.remove('token');
+        Cookies.remove('cart'); //en cart provider estableci que sin cookie de cart va a asignarse un array vacio.
+        router.reload(); //al hacer el reload pierdo el estado de la pagina. Y sin token no hay auth. 
+    }
+
+
 
 
     return (
@@ -90,6 +102,7 @@ export const AuthProvider:FC = ({ children }) => {
             // Methods
             loginUser,
             registerUser,
+            logout,
 
         }}>
             { children }
