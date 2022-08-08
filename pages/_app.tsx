@@ -6,9 +6,13 @@ import useSWR, { SWRConfig } from 'swr'
 import { lightTheme } from '../themes';
 import { CartProvider, UiProvider } from '../context';
 import { AuthProvider } from '../context/auth/AuthProvider';
+import { SessionProvider } from "next-auth/react"
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
+    <SessionProvider>
+
+    
     <SWRConfig 
       value={{
        // refreshInterval: 500,
@@ -27,7 +31,7 @@ function MyApp({ Component, pageProps }: AppProps) {
       </CartProvider>
     </AuthProvider>
     </SWRConfig>
-   
+   </SessionProvider>
   )
 }
 

@@ -8,6 +8,8 @@ import { AuthContext, authReducer } from './';
 import { tesloApi } from '../../api';
 import { IUser } from '../../interfaces';
 
+import { useSession, signOut } from 'next-auth/react';
+
 export interface AuthState {
     isLoggedIn: boolean;
     user?: IUser;
@@ -21,13 +23,23 @@ const AUTH_INITIAL_STATE: AuthState = {
 
 
 export const AuthProvider:FC = ({ children }) => {
+    const {data, status} = useSession();
 
     const [state, dispatch] = useReducer( authReducer, AUTH_INITIAL_STATE );
     const router = useRouter();
 
     useEffect(() => {
-        checkToken();
-    }, [])
+      if(status === 'authenticated'){
+        console.log({user: data?.user})
+        dispatch({type: '[Auth] - Login', payload: data?.user as IUser})
+      }
+    }, [status, data])
+    
+
+    //autenticacion vieja personalizada
+    // useEffect(() => {
+    //     checkToken();
+    // }, [])
 
     const checkToken = async() => {
 
@@ -44,8 +56,6 @@ export const AuthProvider:FC = ({ children }) => {
             Cookies.remove('token');
         }
     }
-    
-
 
     const loginUser = async( email: string, password: string ): Promise<boolean> => {
 
@@ -89,9 +99,20 @@ export const AuthProvider:FC = ({ children }) => {
 
 
     const logout = () => {
-        Cookies.remove('token');
+        
         Cookies.remove('cart');
-        router.reload();
+        Cookies.remove('firstName');
+        Cookies.remove('lastName');
+        Cookies.remove('address');
+        Cookies.remove('adress2');
+        Cookies.remove('zip');
+        Cookies.remove('city');
+        Cookies.remove('country');
+        Cookies.remove('phone');
+        
+        signOut();
+        //Cookies.remove('token');
+        //router.reload();
     }
 
 

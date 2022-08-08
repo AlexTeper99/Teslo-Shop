@@ -38,18 +38,23 @@ const getAddressFromCookies = ():FormData => {
 
 const AddressPage = () => {
 
-    const [hidrated, setHidrated] = useState(false);
-    useEffect(() => {
-        setHidrated(true);
-    },[])
+     const [hidrated, setHidrated] = useState(false);
+     useEffect(() => {
+         setHidrated(true);
+     },[])
 
     const router = useRouter();
     const { updateAddress} = useContext( CartContext );
 
-    const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
+    const { register, handleSubmit, formState: { errors }, reset } = useForm<FormData>({
        defaultValues: getAddressFromCookies() 
     });
 
+    useEffect(() => {
+      reset(getAddressFromCookies()); 
+      
+    }, [reset])
+    
     const onSubmitAddress = ( data: FormData ) => {
         updateAddress( data );
         router.push('/checkout/summary');
@@ -57,7 +62,8 @@ const AddressPage = () => {
 
   return (
 
-        hidrated && (
+        hidrated && 
+        (
         <ShopLayout title="Dirección" pageDescription="Confirmar dirección del destino">
         <form onSubmit={ handleSubmit( onSubmitAddress ) }>
 
@@ -140,10 +146,12 @@ const AddressPage = () => {
                 <Grid item xs={12} sm={ 6 }>
                     <FormControl fullWidth>
                         <TextField
+                            key = {Cookies.get('country') || (countries[0].code)}
+                            label= 'Pais'
                             select
                             required
                             variant="filled"
-                            defaultValue={ Cookies.get('country') ?? " " }
+                            defaultValue={Cookies.get('country') || countries[0].code}
                             { ...register('country', {
                                 required: 'Este campo es requerido'
                             })}
