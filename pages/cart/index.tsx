@@ -25,7 +25,7 @@ const CartPage = () => {
         <ShopLayout title='Carrito - 3' pageDescription={'Carrito de compras de la tienda'}>
             <Typography variant='h1' component='h1'>Carrito</Typography>
 
-            <Grid container>
+            <Grid container spacing={3}>
                 <Grid item xs={ 12 } sm={ 7 }>
                     <CartList editable />
                 </Grid>
