@@ -8,9 +8,15 @@ import { CartProvider, UiProvider } from '../context';
 import { AuthProvider } from '../context/auth/AuthProvider';
 import { SessionProvider } from "next-auth/react"
 
+
+import { PayPalScriptProvider} from "@paypal/react-paypal-js";
+
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <SessionProvider>
+      <PayPalScriptProvider options={{'client-id': process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || ''}} >
+
+      
 
     
     <SWRConfig 
@@ -31,6 +37,7 @@ function MyApp({ Component, pageProps }: AppProps) {
       </CartProvider>
     </AuthProvider>
     </SWRConfig>
+    </PayPalScriptProvider>
    </SessionProvider>
   )
 }
