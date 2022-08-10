@@ -39,4 +39,6 @@ const getProducts = async(req: NextApiRequest, res: NextApiResponse<Data>) => {
 
 
     //TODO: tendremos que actualizar las imagenes
+
+    res.status(200).json(products)
 }
