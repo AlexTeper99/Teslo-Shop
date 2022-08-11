@@ -1,6 +1,6 @@
 
-import { CategoryOutlined, ConfirmationNumberOutlined } from '@mui/icons-material'
-import { CardMedia, Chip, Grid } from '@mui/material'
+import { AddOutlined, CategoryOutlined, ConfirmationNumberOutlined } from '@mui/icons-material'
+import { Box, Button, CardMedia, Chip, Grid, Link } from '@mui/material'
 import { DataGrid, GridColDef, GridValueGetterParams } from '@mui/x-data-grid';
 import useSWR from 'swr';
 
@@ -8,6 +8,7 @@ import { AdminLayout } from '../../components/layouts'
 import { IOrder, IUser } from '../../interfaces';
 import products from '../api/products';
 import { IProduct } from '../../interfaces/products';
+import NextLink from 'next/link';
 
 
 const columns:GridColDef[] = [
@@ -23,7 +24,15 @@ const columns:GridColDef[] = [
             </a>
         )
     }},
-    { field: 'title', headerName: 'Title', width: 250 },
+    { field: 'title', headerName: 'Title', width: 250, renderCell: ({row}: GridValueGetterParams) => {
+        return(
+            <NextLink href={`/admin/products/${row.slug}`} passHref>
+                <Link underline='always'>
+                    {row.title}
+                </Link>
+            </NextLink>
+        )
+    } },
     { field: 'gender', headerName: 'Genero'},
     { field: 'type', headerName: 'Tipo'},
     { field: 'inStock', headerName: 'Inventario'},
@@ -56,6 +65,17 @@ const ProductsPage = () => {
         subTitle={'Mantenimiento de productos'}
         icon={ <CategoryOutlined /> }
     >
+
+        <Box display='flex' justifyContent='end' sx={{ mb: 2 }}>
+            <Button
+                startIcon={ <AddOutlined /> }
+                color="secondary"
+                href="/admin/products/new"
+            >
+                Crear producto
+            </Button>
+        </Box>
+        
          <Grid container className='fadeIn'>
             <Grid item xs={12} sx={{ height:650, width: '100%' }}>
                 <DataGrid 
