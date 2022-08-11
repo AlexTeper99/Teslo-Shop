@@ -1,4 +1,4 @@
-import React, { FC, useRef, useState } from 'react'
+import React, { ChangeEvent, FC, useRef, useState } from 'react'
 import { GetServerSideProps } from 'next'
 import { AdminLayout } from '../../../components/layouts'
 import { IProduct, ISize } from '../../../interfaces';
@@ -76,6 +76,51 @@ const ProductAdminPage:FC<Props> = ({ product }) => {
         }
 
         currentTags.push(newTag);
+    }
+
+
+    const onFilesSelected = async({ target }: ChangeEvent<HTMLInputElement>) => {
+        if ( !target.files || target.files.length === 0 ) {
+            return;
+        }
+        console.log(target.files)
+        Array.from
+        try{
+
+            try {
+            
+                // console.log( file );
+                for( const file of target.files ) {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    const { data } = await tesloApi.post<{ message: string}>('/admin/upload', formData);
+                    setValue('images', [...getValues('images'), data.message], { shouldValidate: true });
+                }
+    
+    
+            } catch (error) {
+                console.log({ error });
+            }
+
+        }catch(error){
+            console.log({error})
+        }
+        /*
+        try {
+            
+            // console.log( file );
+            for( const file of target.files ) {
+                const formData = new FormData();
+                formData.append('file', file);
+                const { data } = await tesloApi.post<{ message: string}>('/admin/upload', formData);
+                setValue('images', [...getValues('images'), data.message], { shouldValidate: true });
+            }
+
+
+        } catch (error) {
+            console.log({ error });
+        }
+        */
     }
 
     const onDeleteTag = ( tag: string ) => {
@@ -316,9 +361,18 @@ const ProductAdminPage:FC<Props> = ({ product }) => {
                                 fullWidth
                                 startIcon={ <UploadOutlined /> }
                                 sx={{ mb: 3 }}
+                                onClick={() => fileInputRef.current?.click()}
                             >
                                 Cargar imagen
                             </Button>
+                            <input 
+                                ref={fileInputRef}
+                                type="file"
+                                multiple
+                                accept='image/png, image/gif, image/jpg'
+                                style={{display: 'none'}}
+                                onChange={onFilesSelected}
+                            />
 
                             <Chip 
                                 label="Es necesario al 2 imagenes"
