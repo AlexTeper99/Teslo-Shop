@@ -1,8 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import axios from 'axios';
+import { IPaypal } from '../../../interfaces';
 import { db } from '../../../database';
 import { Order } from '../../../models';
-import { IPaypal } from '../../../interfaces';
 
 
 
@@ -60,7 +60,6 @@ const getPaypalBearerToken = async():Promise<string|null> => {
 
 const payOrder = async(req: NextApiRequest, res: NextApiResponse<Data>) => {
 
-
     // Todo: validar sesión del usuario
     // TODO: validar mongoID
 
@@ -70,10 +69,10 @@ const payOrder = async(req: NextApiRequest, res: NextApiResponse<Data>) => {
         return res.status(400).json({ message: 'No se pudo confirmar el token de paypal' })
     }
 
-     const { transactionId = '', orderId = ''  } = req.body;
+    const { transactionId = '', orderId = ''  } = req.body;
 
 
-     const { data } = await axios.get<IPaypal.PayPalOrderStatusResponse>( `${ process.env.PAYPAL_ORDERS_URL }/${ transactionId }`, {
+    const { data } = await axios.get<IPaypal.PaypalOrderStatusResponse>( `${ process.env.PAYPAL_ORDERS_URL }/${ transactionId }`, {
         headers: {
             'Authorization': `Bearer ${ paypalBearerToken }`
         }
@@ -83,6 +82,7 @@ const payOrder = async(req: NextApiRequest, res: NextApiResponse<Data>) => {
         return res.status(401).json({ message: 'Orden no reconocida' });
     }
 
+
     await db.connect();
     const dbOrder = await Order.findById(orderId);
 
@@ -90,7 +90,8 @@ const payOrder = async(req: NextApiRequest, res: NextApiResponse<Data>) => {
         await db.disconnect();
         return res.status(400).json({ message: 'Orden no existe en nuestra base de datos' });
     }
-
+    
+    
     if ( dbOrder.total !== Number(data.purchase_units[0].amount.value) ) {
         await db.disconnect();
         return res.status(400).json({ message: 'Los montos de PayPal y nuestra orden no son iguales' });
@@ -103,8 +104,5 @@ const payOrder = async(req: NextApiRequest, res: NextApiResponse<Data>) => {
     await db.disconnect();
 
     
-    
-    return res.status(200).json({ message: 'Orden pagada'});
+    return res.status(200).json({ message: 'Orden pagada' });
 }
-
-
