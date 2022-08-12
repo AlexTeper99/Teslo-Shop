@@ -44,8 +44,6 @@ const registerUser = async(req: NextApiRequest, res: NextApiResponse<Data>) => {
             message: 'El nombre debe de ser de 2 caracteres'
         });
     }
-  
-    //TODO: validar email
     
     if ( !validations.isValidEmail( email ) ) {
         return res.status(400).json({
