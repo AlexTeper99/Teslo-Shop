@@ -44,8 +44,6 @@ const ProductAdminPage:FC<Props> = ({ product }) => {
     const [ newTagValue, setNewTagValue ] = useState('');
     const [isSaving, setIsSaving] = useState(false);
 
-    //watch permite observar los cambios de un input o de todo el formulario
-    //getValues: obtiene todo los valores del formulario al momento que yo lo llamo. setValue setea un valor
     const { register, handleSubmit, formState:{ errors }, getValues, setValue, watch } = useForm<FormData>({
         defaultValues: product
     })
@@ -62,7 +60,7 @@ const ProductAdminPage:FC<Props> = ({ product }) => {
                setValue('slug', newSlug);
           }
       });
-      return () => subscription.unsubscribe(); //para dejar de observar la edicion del valor. 
+      return () => subscription.unsubscribe();
     }, [watch, setValue])
     
 
@@ -140,7 +138,7 @@ const ProductAdminPage:FC<Props> = ({ product }) => {
             });
 
             console.log({data});
-            if ( !form._id ) { //si no tenemos un id significa que fuimos por hacer un new.
+            if ( !form._id ) {
                 router.replace(`/admin/products/${ form.slug }`);
             } else {
                 setIsSaving(false)
