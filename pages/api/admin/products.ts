@@ -1,9 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { IProduct } from '../../../interfaces';
-import { connect, disconnect } from '../../../database/db';
-import { Product } from '../../../models';
-import { db } from '../../../database';
 import { isValidObjectId } from 'mongoose';
+
+import { v2 as cloudinary } from 'cloudinary';
+cloudinary.config( process.env.CLOUDINARY_URL || '' );
+
+import { db } from '../../../database';
+import { IProduct } from '../../../interfaces/products';
+import { Product } from '../../../models';
 
 type Data = 
 | { message: string }
@@ -11,8 +14,6 @@ type Data =
 | IProduct;
 
 export default function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
-
-
     
     switch (req.method) {
         case 'GET':
@@ -27,21 +28,32 @@ export default function handler(req: NextApiRequest, res: NextApiResponse<Data>)
         default:
             return res.status(400).json({ message: 'Bad request' });
     }
-
-    res.status(200).json({ message: 'Example' })
+    
+ 
 }
 
 const getProducts = async(req: NextApiRequest, res: NextApiResponse<Data>) => {
+    
     await db.connect();
 
-    const products = await Product.find().sort().lean();
+    const products = await Product.find()
+        .sort({ title: 'asc' })
+        .lean();
 
-    await db . disconnect(); 
+    await db.disconnect();
+
+    // TODO:
+    const updatedProducts = products.map( product => {
+        product.images = product.images.map( image => {
+            return image.includes('http') ? image : `${ process.env.HOST_NAME}products/${ image }`
+        });
+
+        return product;
+    })
 
 
-    //TODO: tendremos que actualizar las imagenes
+    res.status(200).json( updatedProducts );
 
-    res.status(200).json(products)
 }
 
 
@@ -71,7 +83,6 @@ const updateProduct = async(req: NextApiRequest, res: NextApiResponse<Data>) => 
 
         // TODO: eliminar fotos en Cloudinary
         // https://res.cloudinary.com/cursos-udemy/image/upload/v1645914028/nct31gbly4kde6cncc6i.jpg
-        /*
         product.images.forEach( async(image) => {
             if ( !images.includes(image) ){
                 // Borrar de cloudinary
@@ -80,7 +91,6 @@ const updateProduct = async(req: NextApiRequest, res: NextApiResponse<Data>) => 
                 await cloudinary.uploader.destroy( fileId );
             }
         });
-        */
 
         await product.update( req.body );
         await db.disconnect();
@@ -126,4 +136,5 @@ const createProduct = async(req: NextApiRequest, res: NextApiResponse<Data>) => 
         await db.disconnect();
         return res.status(400).json({ message: 'Revisar logs del servidor' });
      }
+
 }

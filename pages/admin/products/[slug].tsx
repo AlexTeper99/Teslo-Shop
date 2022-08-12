@@ -1,13 +1,14 @@
-import React, { ChangeEvent, FC, useRef, useState } from 'react'
+import { ChangeEvent, FC, useEffect, useRef, useState } from 'react';
 import { GetServerSideProps } from 'next'
-import { AdminLayout } from '../../../components/layouts'
-import { IProduct, ISize } from '../../../interfaces';
-import { DriveFileRenameOutline, SaveOutlined, UploadOutlined } from '@mui/icons-material';
-import { dbProducts } from '../../../database';
-import { Box, Button, capitalize, Card, CardActions, CardMedia, Checkbox, Chip, Divider, FormControl, FormControlLabel, FormGroup, FormLabel, Grid, ListItem, Paper, Radio, RadioGroup, TextField } from '@mui/material';
-import { useForm } from 'react-hook-form';
-import { useEffect } from 'react';
 import { useRouter } from 'next/router';
+import { useForm } from 'react-hook-form';
+
+import { Box, Button, capitalize, Card, CardActions, CardMedia, Checkbox, Chip, Divider, FormControl, FormControlLabel, FormGroup, FormLabel, Grid, ListItem, Paper, Radio, RadioGroup, TextField } from '@mui/material';
+import { DriveFileRenameOutline, SaveOutlined, UploadOutlined } from '@mui/icons-material';
+
+import { AdminLayout } from '../../../components/layouts'
+import { IProduct } from '../../../interfaces';
+import { dbProducts } from '../../../database';
 import { tesloApi } from '../../../api';
 import { Product } from '../../../models';
 
@@ -17,20 +18,19 @@ const validGender = ['men','women','kid','unisex']
 const validSizes = ['XS','S','M','L','XL','XXL','XXXL']
 
 
-interface FormData{
-    _id?: string;
+interface FormData {
+    _id?       : string;
     description: string;
-    images: string[];
-    inStock: number;
-    price: number;
-    sizes: string[];
-    slug: string;
-    tags: string[];
-    title: string;
-    type: string;
-    gender: string;
+    images     : string[];
+    inStock    : number;
+    price      : number;
+    sizes      : string[];
+    slug       : string;
+    tags       : string[];
+    title      : string;
+    type       : string;
+    gender     : string;
 }
-
 
 
 interface Props {
@@ -38,32 +38,45 @@ interface Props {
 }
 
 const ProductAdminPage:FC<Props> = ({ product }) => {
-    //watch permite observar los cambios de un input o de todo el formulario
-    //getValues: obtiene todo los valores del formulario al momento que yo lo llamo. setValue setea un valor
-    const {register, handleSubmit, formState:{errors}, getValues, setValue, watch} = useForm<FormData>({
-        defaultValues: product
-    })
 
     const router = useRouter();
     const fileInputRef = useRef<HTMLInputElement>(null)
     const [ newTagValue, setNewTagValue ] = useState('');
     const [isSaving, setIsSaving] = useState(false);
 
+    //watch permite observar los cambios de un input o de todo el formulario
+    //getValues: obtiene todo los valores del formulario al momento que yo lo llamo. setValue setea un valor
+    const { register, handleSubmit, formState:{ errors }, getValues, setValue, watch } = useForm<FormData>({
+        defaultValues: product
+    })
 
 
     useEffect(() => {
-        const subscription = watch(( value, { name, type } ) => {
-            if ( name === 'title' ) {
-                const newSlug = value.title?.trim()
-                      .replaceAll(' ', '_')
-                      .replaceAll("'", '')
-                      .toLocaleLowerCase() || '';
-  
-                 setValue('slug', newSlug);
-            }
-        });
-        return () => subscription.unsubscribe(); //para dejar de observar la edicion del valor. 
-      }, [watch, setValue])
+      const subscription = watch(( value, { name, type } ) => {
+          if ( name === 'title' ) {
+              const newSlug = value.title?.trim()
+                    .replaceAll(' ', '_')
+                    .replaceAll("'", '')
+                    .toLocaleLowerCase() || '';
+
+               setValue('slug', newSlug);
+          }
+      });
+      return () => subscription.unsubscribe(); //para dejar de observar la edicion del valor. 
+    }, [watch, setValue])
+    
+
+
+
+    const onChangeSize = ( size: string ) => {
+        const currentSizes = getValues('sizes');
+        if ( currentSizes.includes( size ) ) {
+            return setValue('sizes', currentSizes.filter( s => s !== size ), { shouldValidate: true } );
+        }
+
+        setValue('sizes', [ ...currentSizes, size ], { shouldValidate: true });
+
+    }
 
 
     const onNewTag = () => {
@@ -78,34 +91,16 @@ const ProductAdminPage:FC<Props> = ({ product }) => {
         currentTags.push(newTag);
     }
 
+    const onDeleteTag = ( tag: string ) => {
+        const updatedTags = getValues('tags').filter( t => t !== tag );
+        setValue('tags', updatedTags, { shouldValidate: true });
+    }
 
     const onFilesSelected = async({ target }: ChangeEvent<HTMLInputElement>) => {
         if ( !target.files || target.files.length === 0 ) {
             return;
         }
-        console.log(target.files)
-        Array.from
-        try{
 
-            try {
-            
-                // console.log( file );
-                for( const file of target.files ) {
-                    const formData = new FormData();
-                    formData.append('file', file);
-                    const { data } = await tesloApi.post<{ message: string}>('/admin/upload', formData);
-                    setValue('images', [...getValues('images'), data.message], { shouldValidate: true });
-                }
-    
-    
-            } catch (error) {
-                console.log({ error });
-            }
-
-        }catch(error){
-            console.log({error})
-        }
-        /*
         try {
             
             // console.log( file );
@@ -120,23 +115,17 @@ const ProductAdminPage:FC<Props> = ({ product }) => {
         } catch (error) {
             console.log({ error });
         }
-        */
     }
 
-    const onDeleteTag = ( tag: string ) => {
-        const updatedTags = getValues('tags').filter( t => t !== tag );
-        setValue('tags', updatedTags, { shouldValidate: true });
+    const onDeleteImage = ( image: string) =>{
+        setValue(
+            'images', 
+            getValues('images').filter( img => img !== image ),
+            { shouldValidate: true }
+        );
     }
 
-    const onChangeSize = ( size: string ) => {
-        const currentSizes = getValues('sizes');
-        if ( currentSizes.includes( size ) ) {
-            return setValue('sizes', currentSizes.filter( s => s !== size ), { shouldValidate: true } );
-        }
 
-        setValue('sizes', [ ...currentSizes, size ], { shouldValidate: true });
-
-    }
 
     const onSubmit = async( form: FormData ) => {
         
@@ -171,13 +160,14 @@ const ProductAdminPage:FC<Props> = ({ product }) => {
             subTitle={`Editando: ${ product.title }`}
             icon={ <DriveFileRenameOutline /> }
         >
-            <form onSubmit={handleSubmit(onSubmit)}>
+            <form onSubmit={ handleSubmit( onSubmit ) }>
                 <Box display='flex' justifyContent='end' sx={{ mb: 1 }}>
                     <Button 
                         color="secondary"
                         startIcon={ <SaveOutlined /> }
                         sx={{ width: '150px' }}
                         type="submit"
+                        disabled={ isSaving }
                         >
                         Guardar
                     </Button>
@@ -221,10 +211,10 @@ const ProductAdminPage:FC<Props> = ({ product }) => {
                             sx={{ mb: 1 }}
                             { ...register('inStock', {
                                 required: 'Este campo es requerido',
-                                min: {value: 0, message: 'Minimo de valor cero'}
+                                min: { value: 0, message: 'Mínimo de valor cero' }
                             })}
                             error={ !!errors.inStock }
-                            helperText={ errors.inStock?.message}
+                            helperText={ errors.inStock?.message }
                         />
                         
                         <TextField
@@ -235,10 +225,10 @@ const ProductAdminPage:FC<Props> = ({ product }) => {
                             sx={{ mb: 1 }}
                             { ...register('price', {
                                 required: 'Este campo es requerido',
-                                min: {value: 0, message: 'Minimo de valor cero'}
+                                min: { value: 0, message: 'Mínimo de valor cero' }
                             })}
                             error={ !!errors.price }
-                            helperText={ errors.price?.message}
+                            helperText={ errors.price?.message }
                         />
 
                         <Divider sx={{ my: 1 }} />
@@ -267,10 +257,8 @@ const ProductAdminPage:FC<Props> = ({ product }) => {
                             <FormLabel>Género</FormLabel>
                             <RadioGroup
                                 row
-                                value={getValues('gender') || ''}
-                                onChange = {({target}) => setValue('gender', target.value, {shouldValidate: true})  }
-                                // value={ status }
-                                // onChange={ onStatusChanged }
+                                value={ getValues('gender') }
+                                onChange={ ({ target })=> setValue('gender', target.value, { shouldValidate: true }) }
                             >
                                 {
                                     validGender.map( option => (
@@ -289,13 +277,12 @@ const ProductAdminPage:FC<Props> = ({ product }) => {
                             <FormLabel>Tallas</FormLabel>
                             {
                                 validSizes.map(size => (
-                                    <FormControlLabel 
-                                        key={size} 
-                                        control={<Checkbox checked={getValues('sizes').includes(size)}/>} //marco como checkeadas las que tallas son actualmente
+                                    <FormControlLabel
+                                        key={size}
+                                        control={ <Checkbox checked={ getValues('sizes').includes(size) } />} 
                                         label={ size } 
-                                        onChange={() => onChangeSize(size)} //manejo el click de tallas nuevas
-                                />
-
+                                        onChange={ () => onChangeSize( size )  }
+                                    />
                                 ))
                             }
                         </FormGroup>
@@ -311,10 +298,10 @@ const ProductAdminPage:FC<Props> = ({ product }) => {
                             sx={{ mb: 1 }}
                             { ...register('slug', {
                                 required: 'Este campo es requerido',
-                                validate: (val) => val.trim().includes(' ') ? 'No se puede tener espacios en blanco' : undefined
+                                validate: (val) => val.trim().includes(' ') ? 'No puede tener espacios en blanco':undefined
                             })}
                             error={ !!errors.slug }
-                            helperText={ errors.slug?.message}
+                            helperText={ errors.slug?.message }
                         />
 
                         <TextField
@@ -323,9 +310,9 @@ const ProductAdminPage:FC<Props> = ({ product }) => {
                             fullWidth 
                             sx={{ mb: 1 }}
                             helperText="Presiona [spacebar] para agregar"
-                            value={newTagValue}
-                            onChange= { ({target}) => setNewTagValue(target.value)}
-                            onKeyUp={ ({code}) => code === 'Space' ? onNewTag(): undefined}
+                            value={ newTagValue }
+                            onChange={ ({ target }) => setNewTagValue(target.value) }
+                            onKeyUp={ ({ code })=> code === 'Space' ? onNewTag() : undefined }
                         />
                         
                         <Box sx={{
@@ -361,38 +348,44 @@ const ProductAdminPage:FC<Props> = ({ product }) => {
                                 fullWidth
                                 startIcon={ <UploadOutlined /> }
                                 sx={{ mb: 3 }}
-                                onClick={() => fileInputRef.current?.click()}
+                                onClick={ () => fileInputRef.current?.click() }
                             >
                                 Cargar imagen
                             </Button>
                             <input 
-                                ref={fileInputRef}
+                                ref={ fileInputRef }
                                 type="file"
                                 multiple
-                                accept='image/png, image/gif, image/jpg'
-                                style={{display: 'none'}}
-                                onChange={onFilesSelected}
+                                accept='image/png, image/gif, image/jpeg'
+                                style={{ display: 'none' }}
+                                onChange={ onFilesSelected }
                             />
+
 
                             <Chip 
                                 label="Es necesario al 2 imagenes"
                                 color='error'
                                 variant='outlined'
+                                sx={{ display: getValues('images').length < 2 ? 'flex': 'none' }}
                             />
 
                             <Grid container spacing={2}>
                                 {
-                                    product.images.map( img => (
+                                    getValues('images').map( img => (
                                         <Grid item xs={4} sm={3} key={img}>
                                             <Card>
                                                 <CardMedia 
                                                     component='img'
                                                     className='fadeIn'
-                                                    image={ `/products/${ img }` }
+                                                    image={ img }
                                                     alt={ img }
                                                 />
                                                 <CardActions>
-                                                    <Button fullWidth color="error">
+                                                    <Button 
+                                                        fullWidth 
+                                                        color="error"
+                                                        onClick={()=> onDeleteImage(img)}
+                                                    >
                                                         Borrar
                                                     </Button>
                                                 </CardActions>
@@ -422,13 +415,14 @@ export const getServerSideProps: GetServerSideProps = async ({ query }) => {
     
     let product: IProduct | null;
 
-    if(slug === 'new'){
-        //crear un producto
-        const tempProduct = JSON.parse(JSON.stringify(new Product()))
+    if ( slug === 'new' ) {
+        // crear un producto
+        const tempProduct = JSON.parse( JSON.stringify( new Product() ) );
         delete tempProduct._id;
-        tempProduct.images= ['img1.jpg', 'img2.jpg']
+        tempProduct.images = ['img1.jpg','img2.jpg'];
         product = tempProduct;
-    }else{
+
+    } else {
         product = await dbProducts.getProductBySlug(slug.toString());
     }
 
