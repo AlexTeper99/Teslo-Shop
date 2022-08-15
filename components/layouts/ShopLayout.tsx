@@ -1,5 +1,6 @@
 import { FC } from 'react';
 import Head from 'next/head';
+import { useRouter } from 'next/router';
 
 import { Navbar, SideMenu } from '../ui';
 
@@ -11,7 +12,10 @@ interface Props {
 }
 
 export const ShopLayout:FC<Props> = ({ children, title, pageDescription, imageFullUrl }) => {
-  return (
+    const { asPath} = useRouter();
+    //console.log(process.env.NEXT_PUBLIC_LINK + asPath)
+    //{console.log("https://tesloshop-alex.herokuapp.com/" + asPath)}
+    return (
     <>
         <Head>
             <title>{ title }</title>
@@ -20,6 +24,9 @@ export const ShopLayout:FC<Props> = ({ children, title, pageDescription, imageFu
             
             <meta name="og:title" content={ title } />
             <meta name="og:description" content={ pageDescription } />
+            <meta property="og:url" content={process.env.NEXT_PUBLIC_LINK + asPath}/>
+            <meta property="og:type" content="article" />
+            <meta property="og:locale" content="es_ES" />
             {
                 imageFullUrl && (
                     <meta name="og:image" content={ imageFullUrl } />
