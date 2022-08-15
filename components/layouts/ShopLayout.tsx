@@ -13,7 +13,7 @@ interface Props {
 
 export const ShopLayout:FC<Props> = ({ children, title, pageDescription, imageFullUrl }) => {
     const { asPath} = useRouter();
-    //console.log(process.env.NEXT_PUBLIC_LINK + asPath)
+    //   console.log(process.env.NEXT_PUBLIC_LINK + asPath)
     //{console.log("https://tesloshop-alex.herokuapp.com/" + asPath)}
     return (
     <>
