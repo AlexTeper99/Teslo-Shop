@@ -1,6 +1,4 @@
 # Next.js Teslo-Shop App
-#Probarlo en https://tesloshop-alex.herokuapp.com/
-
 
 Para correr localmente, se necesita la base de datos
 ```
